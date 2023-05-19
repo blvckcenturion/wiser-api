@@ -1,9 +1,10 @@
 # services/user.py
-from schemas.user import UserCreate, UserGet, UserUpdate
+from schemas.user import UserCreate, UserGet, UserUpdatePassword
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from models.user import UserModel
 from fastapi import HTTPException
+from fastapi.responses import JSONResponse
 
 class UserService:
     """
@@ -52,31 +53,30 @@ class UserService:
             raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
     @staticmethod
-    def update_user(id: int, user: UserUpdate, db: Session) -> UserGet:
+    def update_user_password(id: int, user: UserUpdatePassword, db: Session):
         """
-        Update a user in the database
+        Update a user's password in the database
         
         Parameters
         ----------
-        user : UserUpdate
+        id : int
+            Id of the user
+        user : UserUpdatePassword
             Pydantic model for updating a user
         db : Session
             Database session
-
-        Returns
-        -------
-        UserGet
-            Pydantic model for retrieving a user
         """
         try:
             # Get the user from the database
-            db_user = db.query(UserModel).filter(UserModel.id == user.id).first()
+            db_user = db.query(UserModel).filter(UserModel.id == id).first()
             # If the user is not found, raise an HTTPException
             if not db_user:
                 raise HTTPException(status_code=404, detail="User not found")
             # If the user is found, verify the password
             if not db_user.verify_password(user.old_password):
                 raise HTTPException(status_code=400, detail="Invalid password")
+            if user.old_password == user.new_password:
+                raise HTTPException(status_code=400, detail="New password cannot be the same as old password")
             # If the password is verified, update the user
             for key, value in user.dict().items():
                 setattr(db_user, key, value)
@@ -85,10 +85,7 @@ class UserService:
                 db_user.password = user.new_password
             # Commit the changes
             db.commit()
-            # Refresh the user to get the updated id
-            db.refresh(db_user)
-            # Return the updated user
-            return db_user
+            
         except SQLAlchemyError as e:
             db.rollback()
             raise HTTPException(status_code=500, detail=f"Database error: {e}")

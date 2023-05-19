@@ -25,9 +25,9 @@ class UserCreate(UserBase):
             raise ValueError('Passwords do not match')
         return v
 
-class UserUpdate(BaseModel):
+class UserUpdatePassword(BaseModel):
     """
-    Pydantic model for updating a user
+    Pydantic model for updating a user's password
     """
 
     old_password: str = Field(None, description="Password of the user", max_length=255, min_length=8)
