@@ -27,5 +27,5 @@ def read_users_me(current_user = Depends(JwtService.get_current_user)):
     """
     Protected endpoint to get the current user
     """
-
+    # Return the current user
     return current_user

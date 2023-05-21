@@ -2,3 +2,4 @@
 __pycache/
 *.pyc
 venv/
+credentials.json

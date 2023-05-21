@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 import os
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
 
 class JwtService:
@@ -75,10 +76,18 @@ class JwtService:
             # If the user id is None, raise an HTTPException
             if user_id is None:
                 raise HTTPException(status_code=401, detail="Invalid credentials")
+            # Verify if the expire time of the access token is valid
+            if datetime.utcnow() > datetime.fromtimestamp(payload.get("exp")):
+                raise HTTPException(status_code=401, detail="Token has expired")
+
         except jwt.PyJWTError:
-            
             raise HTTPException(status_code=401, detail="Invalid credentials")
+
+        # Query the database for the user with the provided user id
         user = db.query(UserModel).filter(UserModel.id == user_id).first()
+
+        # If the user is not found, raise an HTTPException
         if user is None:
             raise HTTPException(status_code=401, detail="Invalid credentials")
+            
         return user

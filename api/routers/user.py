@@ -19,7 +19,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     # Call the create_user method of the UserService class
     return UserService.create_user(user, db)
 
-@user_router.put("/password", response_class=JSONResponse)
+@user_router.patch("/password", response_class=JSONResponse)
 def update_user(user: UserUpdatePassword, db: Session = Depends(get_db), current_user = Depends(JwtService.get_current_user)):
     """
     Protected endpoint

@@ -1,6 +1,9 @@
 # models/user.py
 from sqlalchemy import Column, String
 from models.base import BaseModel
+from sqlalchemy.orm import relationship
+from models.summarization import SummarizationModel
+
 import bcrypt
 
 class UserModel(BaseModel):
@@ -14,6 +17,9 @@ class UserModel(BaseModel):
     # Model's specific attributes
     email = Column(String(255), unique=True, nullable=False)
     _password = Column("password", String(255), nullable=False)
+
+    # Relationships
+    summarizations = relationship("SummarizationModel", back_populates="user")
 
     @property
     def password(self):
