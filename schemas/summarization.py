@@ -15,8 +15,7 @@ class SummarizationGet(BaseModel):
     
     id: int
     title: str
-    transcription_url: str
-    summarization_url: str
+    youtube_video_id: str
 
     
     class Config:

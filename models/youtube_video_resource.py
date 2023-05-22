@@ -14,6 +14,7 @@ class YoutubeVideoResourceModel(BaseModel):
     # Model's specific attributes
     title = Column(String(255), nullable=False)
     youtube_video_id = Column(String(255), unique=True, nullable=False)
+    # not needed anymore
     transcription_url = Column(String(1000), nullable=False)
     summarization_url = Column(String(1000), nullable=False)
 

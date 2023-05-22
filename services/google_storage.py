@@ -39,8 +39,7 @@ class GoogleStorageService:
         blob = bucket.blob(destination_blob_name)
 
         # upload the file
-        with open(source_file_name, "r") as f:
-            blob.upload_from_file(f)
+        blob.upload_from_filename(source_file_name)
 
         # get the public url
         public_url = blob.generate_signed_url(
@@ -54,7 +53,7 @@ class GoogleStorageService:
         return public_url
 
     @staticmethod
-    def create_and_upload_file(destination_blob_name, content) -> str:
+    def create_and_upload_file(file_name, content, destination_blob) -> str:
         """
         Create a file and upload it to the bucket.
         
@@ -71,9 +70,8 @@ class GoogleStorageService:
 
         """
 
-        file_name = f"{destination_blob_name}.txt"
         with open(file_name, 'w') as f:
             f.write(content)
-        url = GoogleStorageService.upload_blob(file_name, destination_blob_name)
+        url = GoogleStorageService.upload_blob(file_name, destination_blob)
         os.remove(file_name)
         return url

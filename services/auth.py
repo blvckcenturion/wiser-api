@@ -32,6 +32,6 @@ class AuthService:
         user = db.query(UserModel).filter(UserModel.email == email).first()
         # If the user is not found, raise an HTTPException
         if not user or not user.verify_password(password):
-            raise HTTPException(status_code=404, detail="Incorrect email or password")
+            raise HTTPException(status_code=404, detail="Incorrect email or password.")
         # Return the user
         return user

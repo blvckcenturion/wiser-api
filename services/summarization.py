@@ -37,12 +37,11 @@ class SummarizationService:
             
             # If the video id is in the database then check if the summarization already exists for the user
             if youtube_video_resource:
-                print('o')
                 # Query the database for the summarization
                 summarization = db.query(SummarizationModel).filter(SummarizationModel.user_id == user_id, SummarizationModel.youtube_video_resource_id == youtube_video_resource.id).first()
                 # If the summarization already exists for the user then raise an HTTPException
                 if summarization:
-                    raise Exception(detail="Summarization for this video & user already exists")
+                    raise Exception("Summarization for this video & user already exists")
 
             else:
                 # If the video id is not in the database then create a new youtube video resource and store it in the database
@@ -75,17 +74,17 @@ class SummarizationService:
                     # Transcribe the audio
                     transcript = OpenAIService.transcribe(audio_path)
                     # Upload the transcription to Google Cloud Storage
-                    transcription_url = GoogleStorageService.create_and_upload_file(os.path.join(temp_dir, f"transcription-{video_id}.txt"), transcript.text)
+                    transcription_url = GoogleStorageService.create_and_upload_file(os.path.join(temp_dir, f"transcription-{video_id}.txt"), transcript.text, f"transcription-{video_id}.txt")
                     # Summarize the transcription
                     summary = OpenAIService.summarize(transcript.text)
                     # Upload the summarization to Google Cloud Storage
-                    summarization_url = GoogleStorageService.create_and_upload_file(os.path.join(temp_dir, f"summarization-{video_id}.txt"), summary)
+                    summarization_url = GoogleStorageService.create_and_upload_file(os.path.join(temp_dir, f"summarization-{video_id}.txt"), summary, f"summarization-{video_id}.txt")
                     # Create a youtube video resource
                     youtube_video_resource = YoutubeVideoResourceService.create(video_id, transcription_url, summarization_url,title, db)
             # Create a summarization
             summarization = SummarizationService.create_summarization(user_id, youtube_video_resource.id, db)
             # Return the summarization
-            return SummarizationGet(id=summarization.id, transcription_url=youtube_video_resource.transcription_url, summarization_url=youtube_video_resource.summarization_url, title=youtube_video_resource.title)
+            return SummarizationGet(id=summarization.id, title=youtube_video_resource.title, youtube_video_id=youtube_video_resource.youtube_video_id)
 
         except Exception as e:
             db.rollback()
@@ -146,4 +145,4 @@ class SummarizationService:
         summarizations = db.query(SummarizationModel).join(YoutubeVideoResourceModel).filter(SummarizationModel.user_id == user_id).all()
         
         # Map the summarizations to summarization get models and return them
-        return [SummarizationGet(id=summarization.id, transcription_url=summarization.youtube_video_resource.transcription_url, summarization_url=summarization.youtube_video_resource.summarization_url, title=summarization.youtube_video_resource.title) for summarization in summarizations]
+        return [SummarizationGet(id=summarization.id, transcription_url=summarization.youtube_video_resource.transcription_url, summarization_url=summarization.youtube_video_resource.summarization_url, title=summarization.youtube_video_resource.title, youtube_video_id=summarization.youtube_video_resource.youtube_video_id) for summarization in summarizations]
